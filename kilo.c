@@ -55,14 +55,24 @@ char editorReadKey() {
 
 /*** output ***/
 
+void editorDrawRows() {
+  int y;
+  for (y = 0; y < 24; y++) {
+    write(STDOUT_FILENO, "~\r\n", 3);
+  }
+}
+
 void editorRefresScreen() {
     write(STDOUT_FILENO, "\x1b[2J", 4);
+    write(STDOUT_FILENO, "\x1b[H", 3);
+
+    editorDrawRows();
     write(STDOUT_FILENO, "\x1b[H", 3);
 }
 
 /*** input ***/
 
-void editorProcessKeyPress() {
+void editorProcessKeypress() {
     char c = editorReadKey();
 
     switch (c) {
@@ -81,7 +91,7 @@ int main() {
 
   while (1){
     editorRefresScreen();
-    editorProcessKeyPress();
+    editorProcessKeypress();
   }
 
   return 0;
