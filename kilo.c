@@ -92,6 +92,8 @@ int getWindowSize(int *rows, int *cols) {
   }
 }
 
+/*** append buffer ***/
+
 struc abuf {
   char *b;
   int len;
