@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "<string.h>"
+#include <string.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
@@ -18,6 +18,7 @@
 /*** data ***/
 
 struct editorConfig {
+  int cx, cy;
   int screenrows;
   int screencols;
   struct termios orig_termios;
@@ -96,7 +97,7 @@ int getWindowSize(int *rows, int *cols) {
 
 /*** append buffer ***/
 
-struc abuf {
+struct abuf {
   char *b;
   int len;
 };
@@ -112,13 +113,13 @@ void abAppend(struct abuf *ab, const char *s, int len) {
   ab->len += len; 
 }
 
-void abFree(struc abuf *ab) {
+void abFree(struct abuf *ab) {
   free(ab->b);
 }
 
 /*** output ***/
 
-void editorDrawRows(struc abuf *ab) {
+void editorDrawRows(struct abuf *ab) {
   int y;
   for (y = 0; y < E.screenrows; y++) {
     if (y == E.screenrows / 3) {
@@ -145,14 +146,16 @@ void editorDrawRows(struc abuf *ab) {
 }
 
 void editorRefresScreen() {
-  struc abuf ab = ABUF_INIT;
+  struct abuf ab = ABUF_INIT;
 
   abAppend(&ab, "\x1b[?25l", 6);
   abAppend(&ab, "\x1b[H", 3);
 
   editorDrawRows(&ab);
 
-  abAppend(&ab, "\x1b[H", 3);
+  char buf[32];
+  snprintf(buf, sizeof(buf), "\x1b[%d;%dH", E.cy + 1, E.cx + 1);
+  abAppend(&ab, buf, strlen(buf));
   abAppend(&ab, "\x1b[?25h", 6);
 
   write(STDOUT_FILENO, ab.b, ab.len);
@@ -160,6 +163,23 @@ void editorRefresScreen() {
 }
 
 /*** input ***/
+
+void editorMoveCursor(char key) {
+  switch (key) {
+    case 'a':
+      E.cx--;
+      break;
+    case 'd':
+      E.cx++;
+      break;
+    case 'w':
+      E.cy--;
+      break;
+    case 's':
+      E.cy++;
+      break;
+  }
+}
 
 void editorProcessKeypress() {
     char c = editorReadKey();
@@ -170,12 +190,22 @@ void editorProcessKeypress() {
           write(STDOUT_FILENO, "\x1b[H", 3);
           exit(0);
           break;
+
+        case 'w':
+        case 's':
+        case 'a':
+        case 'd':
+          editorMoveCursor(c);
+          break;
     }
 }
 
 /*** init ***/
 
 void initEditor() {
+  E.cx = 0;
+  E.cy = 0;
+
   if (getWindowSize(&E.screenrows, &E.screencols) == -1) die("getWindowSize");
 }
 
