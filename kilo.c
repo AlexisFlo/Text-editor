@@ -1,5 +1,9 @@
 /*** includes ***/
 
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
@@ -164,7 +168,7 @@ void editorOpen(char *filename) {
   if (!fp) die("fopen");
 
   char *line = NULL;
-  size_t = linecap = 0;
+  size_t linecap = 0;
   ssize_t linelen;
   linelen = getline(&line, &linecap, fp);
   if (linelen != -1) {
@@ -209,7 +213,7 @@ void editorDrawRows(struct abuf *ab) {
   int y;
   for (y = 0; y < E.screenrows; y++) {
     if (y >= E.numrows) {
-      if (y == E.screenrows / 3) {
+      if (E.numrows == 0 && y == E.screenrows / 3) {
         char welcome[80];
         int welcomelen = snprintf(welcome, sizeof(welcome),
             "kilo editor --version %s", KILO_VERSION);
@@ -331,7 +335,7 @@ int main(int argc, char *argv[]) {
   enableRawMode();
   initEditor();
   if (argc >=2) {
-    editorOpen(argv[1])
+    editorOpen(argv[1]);
   }
 
   while (1){
