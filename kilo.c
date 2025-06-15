@@ -24,6 +24,7 @@
 #define CTRL_KEY(k) ((k) & 0x1f)
 
 enum editorKey {
+  BACKSPACE = 127,
   ARROW_LEFT = 1000,
   ARROW_RIGHT,
   ARROW_UP,
@@ -441,6 +442,10 @@ void editorProcessKeypress() {
     int c = editorReadKey();
 
     switch (c) {
+        case '\r':
+          /*Todo*/
+          break;
+
         case CTRL_KEY('q'):
           write(STDOUT_FILENO, "\x1b[2J", 4);
           write(STDOUT_FILENO, "\x1b[H", 3);
